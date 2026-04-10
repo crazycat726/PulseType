@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PulseType - Precision Typing Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Atkinson+Hyperlegible:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <canvas id="fxCanvas" aria-hidden="true"></canvas>
+
+    <main class="app" aria-live="polite">
+      <header class="hero">
+        <p class="kicker">Precision Typing Lab</p>
+        <h1>PulseType</h1>
+        <p class="subtitle">
+          A cinematic typing arena with adaptive challenge, flow streaks, and live performance telemetry.
+        </p>
+      </header>
+
+      <section class="workflow-bar" aria-label="application navigation">
+        <div class="view-tabs" id="viewTabs">
+          <button class="view-tab active" data-view="test">Test</button>
+          <button class="view-tab" data-view="analyze">Analyze</button>
+          <button class="view-tab" data-view="settings">Settings</button>
+        </div>
+
+        <div class="quick-actions">
+          <button class="chip ghost" id="restartBtn">Restart</button>
+          <button class="chip ghost" id="focusBtn">Focus</button>
+          <button class="chip ghost" id="shareBtn">Share</button>
+          <button class="chip ghost" id="cardBtn">Card</button>
+        </div>
+      </section>
+
+      <section class="view-page active" data-page="test">
+        <article class="welcome-card" id="welcomeCard">
+          <p class="label">Quick Start</p>
+          <p class="micro">
+            Pick mode and duration, type in Test, then review progress in Analyze.
+          </p>
+          <button class="chip ghost" id="dismissWelcomeBtn">Got it</button>
+        </article>
+
+        <section class="setup-strip" aria-label="test setup">
+          <label class="setup-field">
+            <span>Test Type</span>
+            <select id="testTypeSelect">
+              <option value="speed">Speed</option>
+              <option value="accuracy">Accuracy</option>
+              <option value="code">Code</option>
+              <option value="email">Email</option>
+              <option value="essay">Essay</option>
+              <option value="adaptive">Adaptive Coach</option>
+              <option value="custom">Custom Import</option>
+            </select>
+          </label>
+        </section>
+        <p class="micro setup-note" id="testTypeHint">Fast general typing with dynamic word flow.</p>
+        <details class="customize-drawer">
+          <summary>Customize</summary>
+          <section class="customize-grid">
+            <label class="setup-field compact">
+              <span>Duration</span>
+              <select id="durationSelect">
+                <option value="30">30s</option>
+                <option value="60" selected>60s</option>
+                <option value="90">90s</option>
+                <option value="120">120s</option>
+              </select>
+            </label>
+
+            <label class="setup-field compact">
+              <span>Theme</span>
+              <select id="themeSelect">
+                <option value="sol">Solar</option>
+                <option value="arc">Arcade</option>
+                <option value="ink">Ink</option>
+                <option value="cb-safe">Colorblind Safe</option>
+                <option value="cb-warm">Colorblind Warm</option>
+              </select>
+            </label>
+
+            <label class="setup-field wide">
+              <span>Custom Text Import</span>
+              <textarea id="customTextInput" rows="4" placeholder="Paste your own text corpus here..."></textarea>
+            </label>
+
+            <label class="setup-field wide">
+              <span>Import From File</span>
+              <input id="customTextFileInput" type="file" accept=".txt,.md,.csv,.json,.js,.ts,.html,.css,.log" />
+            </label>
+
+            <div class="chip-row customize-actions">
+              <button class="chip ghost" id="saveCustomTextBtn">Save Import</button>
+              <button class="chip ghost" id="importCustomTextBtn">Import File</button>
+              <button class="chip ghost" id="fairModeBtn">Fair Mode</button>
+              <button class="chip ghost" id="dyslexiaBtn">Dyslexia Font</button>
+            </div>
+            <div class="customize-status">
+              <p class="micro" id="customTextStatus">No custom text saved.</p>
+              <p class="micro" id="fairModeStatus">Fair mode off. Verification disabled.</p>
+              <p class="micro" id="fairBestStatus">Verified best: --</p>
+            </div>
+          </section>
+        </details>
+
+        <p class="micro setup-note" id="dailyStatus">Daily challenge ready.</p>
+
+        <section class="status-strip">
+          <article class="insight-card compact">
+            <p class="label">Goal Tracker</p>
+            <div class="meter-track"><div class="meter-fill" id="goalMeter"></div></div>
+            <p class="micro" id="goalLabel">No goal selected.</p>
+          </article>
+
+          <article class="insight-card compact">
+            <p class="label">Daily Streak</p>
+            <p class="medal" id="streakCount">0</p>
+            <p class="micro" id="streakLabel">Complete a run today to start your streak.</p>
+          </article>
+        </section>
+
+        <section class="arena">
+          <aside class="stats-grid">
+            <article class="stat-card"><p>WPM</p><h2 id="wpm">0</h2></article>
+            <article class="stat-card"><p>Accuracy</p><h2 id="accuracy">100%</h2></article>
+            <article class="stat-card highlight"><p>Flow Combo</p><h2 id="combo">0x</h2></article>
+            <article class="stat-card"><p>Errors</p><h2 id="errors">0</h2></article>
+            <article class="stat-card"><p>Time</p><h2 id="timeLeft">60</h2></article>
+            <article class="stat-card"><p>Score</p><h2 id="score">0</h2></article>
+            <article class="stat-card"><p>Best</p><h2 id="bestWpm">0</h2></article>
+            <article class="stat-card highlight"><p>Rank</p><h2 id="rank">-</h2></article>
+          </aside>
+
+          <div class="typing-shell" id="typingShell" tabindex="0" role="application" aria-label="typing zone">
+            <div class="scanline"></div>
+            <div class="prompt-text" id="promptText"></div>
+            <textarea id="inputField" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="typing input"></textarea>
+            <p class="hint" id="hint">Press any key to start. Type with rhythm.</p>
+          </div>
+        </section>
+      </section>
+
+      <section class="view-page" data-page="analyze">
+        <section class="analyze-tabs" id="analyzeTabs">
+          <button class="chip active" data-group="overview">Overview</button>
+          <button class="chip" data-group="diagnostics">Diagnostics</button>
+          <button class="chip" data-group="history">History</button>
+          <button class="chip ghost" id="returnLiveBtn" style="display: none;">Back To Live</button>
+        </section>
+        <p class="micro" id="historyStatus">Showing live session stats.</p>
+
+        <section class="footer-panel" id="advancedPanel">
+          <article class="insight-card" data-group="overview">
+            <p class="label">Rhythm Index</p>
+            <div class="meter-track"><div class="meter-fill" id="rhythmMeter"></div></div>
+            <p class="micro" id="rhythmLabel">warming up...</p>
+          </article>
+
+          <article class="insight-card" data-group="overview">
+            <p class="label">Session Medal</p>
+            <p class="medal" id="medal">-</p>
+            <p class="micro" id="medalHint">Hit 60+ WPM with 95% accuracy for Gold.</p>
+          </article>
+
+          <article class="insight-card" data-group="overview">
+            <p class="label">Personal Record</p>
+            <p class="medal" id="recordDelta">0</p>
+            <p class="micro">Compared to your saved best in this browser.</p>
+          </article>
+
+          <article class="insight-card" data-group="overview">
+            <p class="label">Ghost Race</p>
+            <div class="meter-track"><div class="meter-fill ghost" id="ghostMeter"></div></div>
+            <p class="micro" id="ghostLabel">Target pace: 0 WPM</p>
+          </article>
+
+          <article class="insight-card" data-group="diagnostics">
+            <p class="label">Weak Keys</p>
+            <p class="medal" id="weakKeys">-</p>
+            <p class="micro">Keys with your highest miss count this run.</p>
+          </article>
+
+          <article class="insight-card" data-group="diagnostics">
+            <p class="label">Pace Graph</p>
+            <canvas id="paceCanvas" width="280" height="80" aria-label="pace graph"></canvas>
+            <p class="micro" id="paceLabel">Live WPM trend over this run.</p>
+          </article>
+
+          <article class="insight-card" data-group="diagnostics">
+            <p class="label">Achievement</p>
+            <p class="medal" id="achievement">-</p>
+            <p class="micro" id="achievementHint">Reach 40 combo for Flow State.</p>
+          </article>
+
+          <article class="insight-card" data-group="history">
+            <p class="label">Run Log</p>
+            <ul class="run-log" id="runLog"></ul>
+            <p class="micro">Latest sessions saved locally.</p>
+          </article>
+
+          <article class="insight-card" data-group="diagnostics">
+            <p class="label">Keyboard Heatmap</p>
+            <div class="keymap" id="keymap"></div>
+            <p class="micro">Hotter keys = more misses.</p>
+          </article>
+
+          <article class="insight-card" data-group="history">
+            <p class="label">Result Card</p>
+            <canvas id="resultCardCanvas" width="520" height="280" aria-label="result card preview"></canvas>
+            <p class="micro" id="cardHint">Generates after each run. Use Card to download PNG.</p>
+          </article>
+
+          <article class="insight-card" data-group="overview">
+            <p class="label">Coach</p>
+            <p class="medal" id="coachTitle">Ready</p>
+            <p class="micro" id="coachHint">Run a test to get personalized practice advice.</p>
+          </article>
+        </section>
+      </section>
+
+      <section class="view-page" data-page="settings">
+        <section class="settings-grid">
+          <article class="insight-card">
+            <p class="label">Challenge Modes</p>
+            <div class="chip-row">
+              <button class="chip ghost" id="dailyBtn">Daily</button>
+              <button class="chip ghost" id="drillBtn">Drill</button>
+            </div>
+            <p class="micro">Daily uses deterministic prompts. Drill targets your weak keys.</p>
+          </article>
+
+          <article class="insight-card">
+            <p class="label">Mutators</p>
+            <div class="chip-row" id="mutatorChips">
+              <button class="chip" data-mutator="hardcore">Hardcore</button>
+              <button class="chip" data-mutator="sound">Sound</button>
+              <button class="chip" data-mutator="strict">Strict</button>
+            </div>
+            <p class="micro">Strict blocks incorrect keystrokes instantly.</p>
+          </article>
+
+          <article class="insight-card">
+            <p class="label">Workflow</p>
+            <label class="setup-field">
+              <span>After Finish</span>
+              <select id="finishViewSelect">
+                <option value="stay">Stay on Test</option>
+                <option value="analyze">Open Analyze</option>
+              </select>
+            </label>
+            <p class="micro">Use Test to type, Analyze to review performance, and Settings to shape behavior.</p>
+          </article>
+
+          <article class="insight-card">
+            <p class="label">Performance Goal</p>
+            <label class="setup-field">
+              <span>Goal Preset</span>
+              <select id="goalSelect">
+                <option value="off">Off</option>
+                <option value="balanced">Balanced (55 WPM / 96%)</option>
+                <option value="sprint">Sprint (75 WPM / 95%)</option>
+                <option value="precision">Precision (45 WPM / 99%)</option>
+                <option value="elite">Elite (90 WPM / 97%)</option>
+              </select>
+            </label>
+            <p class="micro">Track progress against a clear target each run.</p>
+          </article>
+
+          <article class="insight-card">
+            <p class="label">Shortcuts</p>
+            <p class="micro">`1/2/3` switch pages, `R` restart, `F` focus, `D` daily, `G` drill.</p>
+          </article>
+
+        </section>
+      </section>
+    </main>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
